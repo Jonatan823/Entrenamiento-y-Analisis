@@ -2,116 +2,61 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SLER - Entrenamiento Evolutivo</title>
+    <title>SLER - Entrenamiento y Análisis de Mejoría</title>
     <style>
         body { font-family: monospace; padding: 40px; background: #fff; display: flex; flex-direction: column; align-items: center; }
-        .timer-zone { font-size: 32px; font-weight: bold; margin: 10px; }
-        .level-indicator { font-size: 14px; text-transform: uppercase; color: #666; margin-bottom: 10px; }
+        .header { width: 100%; max-width: 800px; border-bottom: 2px solid #000; margin-bottom: 20px; }
+        .timers-container { display: flex; gap: 40px; margin: 20px 0; }
+        .timer-box { text-align: center; }
+        .timer-val { font-size: 32px; font-weight: bold; }
+        .label { font-size: 12px; text-transform: uppercase; color: #666; }
+        
         .training-box { 
-            width: 100%; max-width: 700px; min-height: 250px; border: 2px solid #000;
+            width: 100%; max-width: 750px; min-height: 250px; border: 2px solid #000;
             padding: 40px; margin: 20px 0; white-space: pre-wrap;
             font-size: 20px; line-height: 1.8; font-weight: bold; display: none;
         }
+        
+        .controls { margin-top: 20px; }
         button { padding: 15px 40px; cursor: pointer; font-family: monospace; font-weight: bold; background: #000; color: #fff; border: none; }
-        #resultsTable { width: 100%; max-width: 700px; border-collapse: collapse; margin-top: 20px; display: none; }
-        #resultsTable th, #resultsTable td { border: 1px solid #000; padding: 10px; text-align: center; }
+        button:hover { background: #333; }
+
+        table { width: 100%; max-width: 800px; border-collapse: collapse; margin-top: 30px; display: none; }
+        th, td { border: 1px solid #000; padding: 12px; text-align: center; }
+        .active { border-color: #007bff; box-shadow: 0 0 10px rgba(0,123,255,0.2); }
     </style>
 </head>
 <body>
 
-    <div class="level-indicator" id="lvlTag">BLOQUE 1: NIVEL 1 (NORMAL)</div>
-    <div class="timer-zone" id="timer">0.000s</div>
+    <div class="header">
+        <h3>NODO DE ENTRENAMIENTO Y ANÁLISIS: NIVEL <span id="lvlDisplay">1</span></h3>
+    </div>
 
-    <button id="actionBtn" onclick="nextStep()">COMENZAR NIVEL 1</button>
+    <div class="timers-container">
+        <div class="timer-box">
+            <div class="label" id="labelT1">Tiempo Estándar</div>
+            <div class="timer-val" id="timerStd">0.000s</div>
+        </div>
+        <div class="timer-box" id="timerSlerContainer" style="opacity: 0.3;">
+            <div class="label">Tiempo SLER</div>
+            <div class="timer-val" id="timerSler">0.000s</div>
+        </div>
+    </div>
 
     <div id="exerciseBox" class="training-box"></div>
+
+    <div class="controls">
+        <button id="actionBtn" onclick="processFlow()">INICIAR LECTURA ESTÁNDAR</button>
+    </div>
 
     <table id="resultsTable">
         <thead>
             <tr>
-                <th>Binomio</th>
-                <th>Normal (s)</th>
+                <th>Nivel</th>
+                <th>Renglones</th>
+                <th>Estándar (s)</th>
                 <th>SLER (s)</th>
-                <th>Mejoría (%)</th>
+                <th>Mejoría</th>
             </tr>
         </thead>
-        <tbody id="statsBody"></tbody>
-    </table>
-
-<script>
-    let startTime, timerInterval;
-    let currentLvl = 1;
-    const totalLvls = 9;
-    let results = []; // Almacena los tiempos por nivel
-
-    // Base de datos de ejercicios (Binomios: Normal vs SLER)
-    const database = {
-        1: "La lectura fluida requiere práctica constante.",
-        2: "LA LECTURA FLUIDA REQUIERE PRÁCTICA-\n-CONSTANTE.",
-        3: "El sistema visual se agota con el salto sacádico continuo.",
-        4: "EL SISTEMA VISUAL SE AGOTA CON EL SAL-\n-TO SACÁDICO CONTINUO.",
-        // Se pueden añadir aquí los 9 niveles con carga progresiva...
-    };
-
-    function nextStep() {
-        const btn = document.getElementById('actionBtn');
-        const box = document.getElementById('exerciseBox');
-        const tag = document.getElementById('lvlTag');
-
-        if (box.style.display === "none" || box.style.display === "") {
-            // INICIAR LECTURA
-            box.innerText = database[currentLvl] || "Texto de nivel superior en desarrollo...";
-            box.style.display = "block";
-            btn.innerText = "FINALIZAR NIVEL " + currentLvl;
-            startClock();
-        } else {
-            // FINALIZAR LECTURA Y PASAR AL SIGUIENTE
-            stopClock();
-            let timeTaken = parseFloat(document.getElementById('timer').innerText);
-            results.push(timeTaken);
-            box.style.display = "none";
-            
-            if (currentLvl < totalLvls) {
-                currentLvl++;
-                let type = (currentLvl % 2 === 0) ? "SLER" : "NORMAL";
-                tag.innerText = `BLOQUE ${Math.ceil(currentLvl/2)}: NIVEL ${currentLvl} (${type})`;
-                btn.innerText = "INICIAR NIVEL " + currentLvl;
-                document.getElementById('timer').innerText = "0.000s";
-            } else {
-                showFinalReport();
-            }
-        }
-    }
-
-    function startClock() {
-        startTime = performance.now();
-        timerInterval = setInterval(() => {
-            document.getElementById('timer').innerText = ((performance.now() - startTime) / 1000).toFixed(3) + "s";
-        }, 10);
-    }
-
-    function stopClock() { clearInterval(timerInterval); }
-
-    function showFinalReport() {
-        document.getElementById('actionBtn').style.display = "none";
-        document.getElementById('resultsTable').style.display = "table";
-        const body = document.getElementById('statsBody');
-        
-        for (let i = 0; i < results.length; i += 2) {
-            let normal = results[i];
-            let sler = results[i+1] || 0;
-            let improvement = sler ? (((normal - sler) / normal) * 100).toFixed(1) : "N/A";
-            
-            body.innerHTML += `
-                <tr>
-                    <td>Binomio ${Math.ceil((i+1)/2)}</td>
-                    <td>${normal}s</td>
-                    <td>${sler}s</td>
-                    <td>${improvement}%</td>
-                </tr>
-            `;
-        }
-    }
-</script>
-</body>
-</html>
+        <tbody id="

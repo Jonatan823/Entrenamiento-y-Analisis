@@ -25,8 +25,9 @@
 
         .training-box { 
             width: 100%; max-width: 650px; min-height: 350px;
-            padding: 40px 20px; font-size: 21px; line-height: 1.8;
+            padding: 20px; font-size: 21px; line-height: 1.8;
             font-weight: bold; background: #fff; display: none; margin-bottom: 20px;
+            text-align: left; /* Asegura alineación a la izquierda */
         }
         .line-box { white-space: pre; display: block; height: 1.8em; }
 
@@ -89,12 +90,12 @@
     const LIMITE = 42; 
     let finalResults = [];
 
-    // Textos calibrados por nivel (palabras máx 6 caracteres)
+    // Textos calibrados: palabras de 6 letras en zona central (posiciones 10-25 aprox)
     const texts = [
         "El sol da luz hoy. El ojo ve el mar. Es muy azul y fiel. Todo va bien.",
         "Leer es un gran plan. Cada paso es un reto. El modo SLER es muy útil hoy. Ven y mira el sol. Es luz y es paz hoy.",
         "Un buen texto es clave. No hay duda de su valor. El flujo es real y muy veloz en el modo que ves hoy. Es paz. Todo fluye muy bien.",
-        "Si el ojo va y ve bien, todo fluye en paz. No hay saltos ni error. Es un gran avance para tu mente. Lee con fe y gana luz en cada paso. Ver es vivir. Cada día es más. El fin es real. Ten fe."
+        "Si el ojo va y ve bien, todo fluye en paz. No hay saltos ni error. Es un gran avance para tu mente. Lee con fe y gana luz en cada paso. Ver es vivir. Cada día es más. El fin es real. Ten fe y mira."
     ];
 
     function tratarSignos(w, inv) {
@@ -114,17 +115,13 @@
                 lin += (lin ? " " : "") + mazo.shift();
             }
 
-            // Centrado de renglón (Isometría visual)
-            let padTotal = Math.max(0, LIMITE - lin.length);
-            let padLeft = Math.floor(padTotal / 2);
-
             if (aplicarSler && par) {
                 let inv = lin.split(' ').map(w => tratarSignos(w, true)).reverse().join(' ');
                 let slerPad = " ".repeat(Math.max(0, LIMITE - inv.length));
                 res += `<div class="line-box">${slerPad}${inv}</div>`;
             } else {
-                let finalPad = " ".repeat(padLeft);
-                res += `<div class="line-box">${finalPad}${lin}</div>`;
+                // Eliminado cualquier padding o centrado forzado
+                res += `<div class="line-box">${lin}</div>`;
             }
             par = !par;
         }

@@ -2,12 +2,13 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SLER Visual Lab - Isometría Pura</title>
+    <title>SLER Visual Lab - Nodo Bell Ville</title>
     <style>
         :root { --accent: #000; --bg: #fff; --sler-blue: #0ea5e9; }
         * { box-sizing: border-box; }
         body { font-family: monospace; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
+        /* Lateral Derecha */
         .results-sidebar { 
             width: 300px; border-left: 1px solid #eee; padding: 40px 20px; 
             order: 2; display: flex; flex-direction: column; gap: 20px;
@@ -15,6 +16,7 @@
         .bin-entry { font-size: 13px; color: #999; line-height: 1.6; }
         .bin-entry.active { color: #000; font-weight: bold; }
 
+        /* Área Central */
         .main-content { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 40px; overflow-y: auto; }
         .header { width: 100%; max-width: 650px; border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; }
         
@@ -24,10 +26,10 @@
         .label { font-size: 10px; text-transform: uppercase; color: #666; letter-spacing: 1px; }
 
         .training-box { 
-            width: 100%; max-width: 650px; min-height: 350px;
+            width: 100%; max-width: 650px; min-height: 380px;
             padding: 20px; font-size: 21px; line-height: 1.8;
             font-weight: bold; background: #fff; display: none; margin-bottom: 20px;
-            text-align: left; /* Asegura alineación a la izquierda */
+            text-align: left;
         }
         .line-box { white-space: pre; display: block; height: 1.8em; }
 
@@ -47,7 +49,7 @@
     <main class="main-content">
         <div class="header">
             <span class="label">SLER LAB: NIVEL <span id="lvlDisplay">1</span></span>
-            <span class="label">BELL VILLE, AR</span>
+            <span class="label">ISOMETRÍA 2-4-6-10</span>
         </div>
 
         <div class="timers">
@@ -90,12 +92,16 @@
     const LIMITE = 42; 
     let finalResults = [];
 
-    // Textos calibrados: palabras de 6 letras en zona central (posiciones 10-25 aprox)
+    // Textos calibrados para generar exactamente 2, 4, 6 y 10 renglones
     const texts = [
-        "El sol da luz hoy. El ojo ve el mar. Es muy azul y fiel. Todo va bien.",
-        "Leer es un gran plan. Cada paso es un reto. El modo SLER es muy útil hoy. Ven y mira el sol. Es luz y es paz hoy.",
-        "Un buen texto es clave. No hay duda de su valor. El flujo es real y muy veloz en el modo que ves hoy. Es paz. Todo fluye muy bien.",
-        "Si el ojo va y ve bien, todo fluye en paz. No hay saltos ni error. Es un gran avance para tu mente. Lee con fe y gana luz en cada paso. Ver es vivir. Cada día es más. El fin es real. Ten fe y mira."
+        /* 2 Renglones */
+        "El ojo ve la luz hoy. Es un gran modo de ver el mar fiel y azul.",
+        /* 4 Renglones */
+        "Leer es un gran plan. Cada paso es un reto hoy. El modo SLER es muy util para ver. Ven y mira el sol con fe en este dia de paz.",
+        /* 6 Renglones */
+        "Un buen texto es clave. No hay duda de su gran valor real. El flujo es veloz en el modo que ves hoy. Todo va muy bien aqui. Lee con fe y gana luz en cada paso de este test. Es para tu mente.",
+        /* 10 Renglones */
+        "Si el ojo va y ve bien, todo fluye en paz. No hay saltos ni error en el plan. Es un gran avance para tu mente. Lee con fe y gana luz en cada paso. Ver es vivir cada dia mas. El fin es real y muy fiel. Ten fe y mira el sol. Es un gran reto hoy. Busca tu luz. Todo va muy bien aqui. El modo es real."
     ];
 
     function tratarSignos(w, inv) {
@@ -120,7 +126,6 @@
                 let slerPad = " ".repeat(Math.max(0, LIMITE - inv.length));
                 res += `<div class="line-box">${slerPad}${inv}</div>`;
             } else {
-                // Eliminado cualquier padding o centrado forzado
                 res += `<div class="line-box">${lin}</div>`;
             }
             par = !par;
@@ -169,7 +174,7 @@
     function saveStats() {
         const std = document.getElementById('timerStd').innerText;
         const sler = document.getElementById('timerSler').innerText;
-        const lines = [2, 4, 6, 10][currentLvl-1];
+        const lines = document.getElementById('exerciseBox').querySelectorAll('.line-box').length;
         finalResults.push({ lvl: currentLvl, lines, std, sler });
         const entry = document.getElementById(`bin-${currentLvl}`);
         entry.innerHTML = `N${currentLvl} (${lines}R): STD ${std} | SLER ${sler}`;

@@ -2,117 +2,84 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SLER - Entrenamiento y Análisis</title>
+    <title>SLER - Entrenamiento Evolutivo</title>
     <style>
-        :root {
-            --accent: #0ea5e9;
-            --bg: #ffffff;
-            --text: #000000;
-        }
-        body { 
-            font-family: 'Courier New', Courier, monospace; 
-            padding: 40px; 
-            background: var(--bg); 
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        h3 { letter-spacing: 2px; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 10px; width: 100%; max-width: 800px; text-align: center; }
-        
-        .timer-zone { font-size: 32px; font-weight: bold; margin: 20px 0; font-variant-numeric: tabular-nums; }
-        
-        /* BOX ÚNICO: Sin distracciones */
+        body { font-family: monospace; padding: 40px; background: #fff; display: flex; flex-direction: column; align-items: center; }
+        .timer-zone { font-size: 32px; font-weight: bold; margin: 10px; }
+        .level-indicator { font-size: 14px; text-transform: uppercase; color: #666; margin-bottom: 10px; }
         .training-box { 
-            width: 100%;
-            max-width: 700px;
-            min-height: 300px;
-            border: 2px solid #000;
-            padding: 40px;
-            margin: 20px 0;
-            background: #fff;
-            white-space: pre-wrap;
-            font-size: 22px; /* Tamaño optimizado para lectura en voz alta */
-            line-height: 1.8;
-            font-weight: bold;
-            display: none; /* Se activa al iniciar */
+            width: 100%; max-width: 700px; min-height: 250px; border: 2px solid #000;
+            padding: 40px; margin: 20px 0; white-space: pre-wrap;
+            font-size: 20px; line-height: 1.8; font-weight: bold; display: none;
         }
-
-        .controls { margin: 20px 0; }
-        button { 
-            padding: 18px 40px; 
-            cursor: pointer; 
-            font-family: monospace; 
-            font-weight: bold; 
-            background: #000; 
-            color: #fff; 
-            border: none;
-            font-size: 16px;
-        }
-        button:hover { background: var(--accent); }
-
-        #resultsReport { 
-            margin-top: 30px; 
-            padding: 30px; 
-            border: 1px dashed #000; 
-            width: 100%; 
-            max-width: 700px; 
-            display: none; 
-            background: #f9f9f9;
-        }
+        button { padding: 15px 40px; cursor: pointer; font-family: monospace; font-weight: bold; background: #000; color: #fff; border: none; }
+        #resultsTable { width: 100%; max-width: 700px; border-collapse: collapse; margin-top: 20px; display: none; }
+        #resultsTable th, #resultsTable td { border: 1px solid #000; padding: 10px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <h3>Entrenamiento y Análisis de Mejoría</h3>
-    
+    <div class="level-indicator" id="lvlTag">BLOQUE 1: NIVEL 1 (NORMAL)</div>
     <div class="timer-zone" id="timer">0.000s</div>
 
-    <div class="controls">
-        <button id="actionBtn" onclick="handleFlow()">INICIAR ENTRENAMIENTO</button>
-    </div>
+    <button id="actionBtn" onclick="nextStep()">COMENZAR NIVEL 1</button>
 
     <div id="exerciseBox" class="training-box"></div>
 
-    <div id="resultsReport">
-        <h4>ANÁLISIS DE SESIÓN</h4>
-        <div id="statsContent"></div>
-        <button onclick="location.reload()" style="margin-top:20px; background:#666; padding:10px 20px;">NUEVA SESIÓN</button>
-    </div>
+    <table id="resultsTable">
+        <thead>
+            <tr>
+                <th>Binomio</th>
+                <th>Normal (s)</th>
+                <th>SLER (s)</th>
+                <th>Mejoría (%)</th>
+            </tr>
+        </thead>
+        <tbody id="statsBody"></tbody>
+    </table>
 
 <script>
     let startTime, timerInterval;
-    let state = 0; // 0: reposo, 1: ejercicio, 2: fin
-    
-    // Algoritmo SLER Correcto: Inversión semántica y guiones de enganche
-    // Respetando la regla de completar la visual en la línea antagonista [cite: 2026-01-23]
-    const slerText = 
-`LA LECTURA TRADICIONAL IMPLICA-
--UN SALTO BRUSCO AL FINAL DE CA-
--DA RENGLÓN IMPRESO. ESTE MOVI-
-,MIENTO MECÁNICO GENERA UN VA-
--CÍO COGNITIVO LLAMADO SACADA-
-.DE RETORNO`;
+    let currentLvl = 1;
+    const totalLvls = 9;
+    let results = []; // Almacena los tiempos por nivel
 
-    function handleFlow() {
+    // Base de datos de ejercicios (Binomios: Normal vs SLER)
+    const database = {
+        1: "La lectura fluida requiere práctica constante.",
+        2: "LA LECTURA FLUIDA REQUIERE PRÁCTICA-\n-CONSTANTE.",
+        3: "El sistema visual se agota con el salto sacádico continuo.",
+        4: "EL SISTEMA VISUAL SE AGOTA CON EL SAL-\n-TO SACÁDICO CONTINUO.",
+        // Se pueden añadir aquí los 9 niveles con carga progresiva...
+    };
+
+    function nextStep() {
         const btn = document.getElementById('actionBtn');
         const box = document.getElementById('exerciseBox');
+        const tag = document.getElementById('lvlTag');
 
-        if (state === 0) {
-            // Iniciar ejercicio
-            state = 1;
-            box.innerText = slerText;
-            box.style.display = 'block';
-            btn.innerText = "FINALIZAR LECTURA";
+        if (box.style.display === "none" || box.style.display === "") {
+            // INICIAR LECTURA
+            box.innerText = database[currentLvl] || "Texto de nivel superior en desarrollo...";
+            box.style.display = "block";
+            btn.innerText = "FINALIZAR NIVEL " + currentLvl;
             startClock();
-        } 
-        else if (state === 1) {
-            // Finalizar y mostrar análisis
+        } else {
+            // FINALIZAR LECTURA Y PASAR AL SIGUIENTE
             stopClock();
-            state = 2;
-            box.style.display = 'none';
-            btn.style.display = 'none';
-            showReport();
+            let timeTaken = parseFloat(document.getElementById('timer').innerText);
+            results.push(timeTaken);
+            box.style.display = "none";
+            
+            if (currentLvl < totalLvls) {
+                currentLvl++;
+                let type = (currentLvl % 2 === 0) ? "SLER" : "NORMAL";
+                tag.innerText = `BLOQUE ${Math.ceil(currentLvl/2)}: NIVEL ${currentLvl} (${type})`;
+                btn.innerText = "INICIAR NIVEL " + currentLvl;
+                document.getElementById('timer').innerText = "0.000s";
+            } else {
+                showFinalReport();
+            }
         }
     }
 
@@ -123,20 +90,27 @@
         }, 10);
     }
 
-    function stopClock() {
-        clearInterval(timerInterval);
-    }
+    function stopClock() { clearInterval(timerInterval); }
 
-    function showReport() {
-        const finalTime = document.getElementById('timer').innerText;
-        const report = document.getElementById('resultsReport');
-        const content = document.getElementById('statsContent');
+    function showFinalReport() {
+        document.getElementById('actionBtn').style.display = "none";
+        document.getElementById('resultsTable').style.display = "table";
+        const body = document.getElementById('statsBody');
         
-        report.style.display = 'block';
-        content.innerHTML = `
-            <p>Tiempo de procesamiento neural: <strong>${finalTime}</strong></p>
-            <p style="font-size: 13px; color: #555;">Sesión registrada en el Nodo Bell Ville. Los datos de isometría han sido validados.</p>
-        `;
+        for (let i = 0; i < results.length; i += 2) {
+            let normal = results[i];
+            let sler = results[i+1] || 0;
+            let improvement = sler ? (((normal - sler) / normal) * 100).toFixed(1) : "N/A";
+            
+            body.innerHTML += `
+                <tr>
+                    <td>Binomio ${Math.ceil((i+1)/2)}</td>
+                    <td>${normal}s</td>
+                    <td>${sler}s</td>
+                    <td>${improvement}%</td>
+                </tr>
+            `;
+        }
     }
 </script>
 </body>

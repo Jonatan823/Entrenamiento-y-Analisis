@@ -10,34 +10,38 @@
         
         /* Lateral Derecha: Registro de Binomios */
         .results-sidebar { 
-            width: 250px; border-left: 1px solid #eee; padding: 40px 20px; 
+            width: 300px; border-left: 1px solid #eee; padding: 40px 20px; 
             order: 2; display: flex; flex-direction: column; gap: 20px;
         }
         .bin-entry { font-size: 13px; color: #999; line-height: 1.6; }
         .bin-entry.active { color: #000; font-weight: bold; }
 
         /* Área Central */
-        .main-content { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 40px; }
-        .header { width: 100%; max-width: 600px; border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+        .main-content { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 40px; overflow-y: auto; }
+        .header { width: 100%; max-width: 650px; border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; }
         
-        .timers { display: flex; gap: 50px; margin-bottom: 30px; }
+        .timers { display: flex; gap: 50px; margin-bottom: 20px; }
         .timer-box { text-align: center; width: 120px; }
         .timer-val { font-size: 28px; font-weight: bold; font-variant-numeric: tabular-nums; }
         .label { font-size: 10px; text-transform: uppercase; color: #666; letter-spacing: 1px; }
 
         .training-box { 
-            width: 100%; max-width: 600px; height: 350px;
+            width: 100%; max-width: 650px; min-height: 250px;
             padding: 20px; font-size: 20px; line-height: 1.7;
-            font-weight: bold; background: #fff; display: none;
+            font-weight: bold; background: #fff; display: none; margin-bottom: 20px;
         }
         .sler-line { white-space: pre; display: block; }
 
-        .controls { margin-top: 30px; }
+        .controls { margin-top: 10px; margin-bottom: 30px; }
         button { 
             padding: 15px 60px; cursor: pointer; font-family: monospace; font-weight: bold; 
             background: #000; color: #fff; border: none; font-size: 16px;
         }
-        button:hover { background: var(--sler-blue); }
+        
+        /* Tabla Final de Parciales */
+        #resultsTable { width: 100%; max-width: 650px; border-collapse: collapse; margin-top: 20px; display: none; animation: fadeIn 0.5s; }
+        #resultsTable th, #resultsTable td { border: 1px solid #000; padding: 12px; text-align: center; font-size: 14px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -45,6 +49,7 @@
     <main class="main-content">
         <div class="header">
             <span class="label">SLER LAB: NIVEL <span id="lvlDisplay">1</span></span>
+            <span class="label">BELL VILLE, AR</span>
         </div>
 
         <div class="timers">
@@ -63,6 +68,19 @@
         <div class="controls">
             <button id="mainBtn" onclick="handleFlow()">Iniciar</button>
         </div>
+
+        <table id="resultsTable">
+            <thead>
+                <tr>
+                    <th>Nivel</th>
+                    <th>Renglones</th>
+                    <th>Estándar (s)</th>
+                    <th>SLER (s)</th>
+                    <th>Mejoría</th>
+                </tr>
+            </thead>
+            <tbody id="statsBody"></tbody>
+        </table>
     </main>
 
     <aside class="results-sidebar">
@@ -76,8 +94,9 @@
 <script>
     let startTime, timerInterval;
     let currentLvl = 1;
-    let mode = 'IDLE'; // IDLE, RUN_STD, WAIT_SLER, RUN_SLER
+    let mode = 'IDLE'; 
     const LIMITE = 45;
+    let finalResults = [];
 
     const texts = [
         "La lectura tradicional implica un salto brusco al final de cada renglón impreso. El sistema visual se adapta.",
@@ -137,13 +156,12 @@
             startClock('timerSler');
         } else if (mode === 'RUN_SLER') {
             stopClock();
-            updateSidebar();
+            saveResult();
             if (currentLvl < 4) {
                 currentLvl++;
                 resetState();
             } else {
-                btn.innerText = "Finalizado";
-                btn.disabled = true;
+                finishSession();
             }
         }
     }
@@ -157,9 +175,13 @@
 
     function stopClock() { clearInterval(timerInterval); }
 
-    function updateSidebar() {
+    function saveResult() {
         const std = document.getElementById('timerStd').innerText;
         const sler = document.getElementById('timerSler').innerText;
+        const lines = [2, 4, 6, 10][currentLvl-1];
+        
+        finalResults.push({ lvl: currentLvl, lines, std, sler });
+        
         const entry = document.getElementById(`bin-${currentLvl}`);
         entry.innerHTML = `N${currentLvl}: STD ${std} | SLER ${sler}`;
         entry.classList.add('active');
@@ -173,6 +195,23 @@
         document.getElementById('timerSler').innerText = "0.000s";
         document.getElementById('slerTimerCont').style.opacity = "0.1";
         document.getElementById('mainBtn').innerText = "Iniciar";
+    }
+
+    function finishSession() {
+        const btn = document.getElementById('mainBtn');
+        const table = document.getElementById('resultsTable');
+        const body = document.getElementById('statsBody');
+        
+        document.getElementById('exerciseBox').style.display = 'none';
+        btn.innerText = "Finalizado";
+        btn.disabled = true;
+        
+        table.style.display = 'table';
+        finalResults.forEach(r => {
+            let s1 = parseFloat(r.std), s2 = parseFloat(r.sler);
+            let imp = (((s1 - s2) / s1) * 100).toFixed(1) + "%";
+            body.innerHTML += `<tr><td>${r.lvl}</td><td>${r.lines}</td><td>${r.std}</td><td>${r.sler}</td><td>${imp}</td></tr>`;
+        });
     }
 </script>
 </body>

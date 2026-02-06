@@ -2,155 +2,187 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SLER - Entrenamiento y Análisis</title>
+    <title>SLER Visual Lab - Nodo Bell Ville</title>
     <style>
-        body { font-family: monospace; padding: 40px; background: #fff; display: flex; flex-direction: column; align-items: center; }
-        .header { width: 100%; max-width: 800px; border-bottom: 2px solid #000; margin-bottom: 20px; text-align: center; }
-        .timers-container { display: flex; gap: 40px; margin: 20px 0; }
-        .timer-box { text-align: center; width: 150px; }
-        .timer-val { font-size: 32px; font-weight: bold; }
-        .label { font-size: 11px; text-transform: uppercase; color: #666; margin-bottom: 5px; }
+        :root { --accent: #000; --bg: #fff; --sler-blue: #0ea5e9; }
+        * { box-sizing: border-box; }
+        body { font-family: monospace; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        .training-box { 
-            width: 100%; max-width: 750px; min-height: 250px; border: 1px solid #ccc;
-            padding: 40px; margin: 20px 0; white-space: pre-wrap;
-            font-size: 22px; line-height: 1.8; font-weight: bold; display: none;
-            background: #fdfdfd;
-        }
-        
-        .controls { margin-top: 20px; }
-        button { 
-            padding: 15px 40px; cursor: pointer; font-family: monospace; 
-            font-weight: bold; background: #000; color: #fff; border: none;
-            text-transform: uppercase;
-        }
-        button:active { transform: scale(0.98); }
+        /* Lateral de Niveles Realizados */
+        .sidebar { width: 220px; border-right: 2px solid #000; padding: 20px; background: #f9f9f9; display: flex; flex-direction: column; gap: 10px; }
+        .side-lvl { padding: 10px; border: 1px solid #ccc; font-size: 11px; background: #fff; }
+        .side-lvl.done { border-color: var(--sler-blue); color: var(--sler-blue); font-weight: bold; }
 
-        table { width: 100%; max-width: 800px; border-collapse: collapse; margin-top: 30px; display: none; }
-        th, td { border: 1px solid #000; padding: 12px; text-align: center; font-size: 14px; }
+        /* Área Central de Entrenamiento */
+        .main-content { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; position: relative; }
+        .header { width: 100%; max-width: 800px; border-bottom: 2px solid #000; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        
+        .timers { display: flex; gap: 30px; margin: 10px 0; }
+        .timer-box { text-align: center; }
+        .timer-val { font-size: 28px; font-weight: bold; font-variant-numeric: tabular-nums; }
+        .label { font-size: 10px; text-transform: uppercase; color: #666; }
+
+        .training-box { 
+            width: 100%; max-width: 600px; height: 320px; border: 1px solid #eee;
+            padding: 30px; margin: 10px 0; font-size: 19px; line-height: 1.6;
+            font-weight: bold; background: #fff; display: none; overflow: hidden;
+        }
+        .sler-line { white-space: pre; display: block; height: 1.6em; }
+
+        /* Botón Mejorado y Posicionado */
+        .controls { margin-top: 10px; }
+        button { 
+            padding: 15px 45px; cursor: pointer; font-family: monospace; font-weight: bold; 
+            background: #000; color: #fff; border: none; font-size: 14px; letter-spacing: 1px;
+        }
+        button:hover { background: var(--sler-blue); }
+
+        #resultsTable { width: 100%; max-width: 600px; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+        #resultsTable th, #resultsTable td { border: 1px solid #000; padding: 8px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h3>NODO DE ENTRENAMIENTO Y ANÁLISIS: NIVEL <span id="lvlDisplay">1</span></h3>
-    </div>
+    <aside class="sidebar">
+        <div class="label">Progreso de Sesión</div>
+        <div id="side-1" class="side-lvl">NIVEL 1: 2 Renglones</div>
+        <div id="side-2" class="side-lvl">NIVEL 2: 4 Renglones</div>
+        <div id="side-3" class="side-lvl">NIVEL 3: 6 Renglones</div>
+        <div id="side-4" class="side-lvl">NIVEL 4: 10 Renglones</div>
+    </aside>
 
-    <div class="timers-container">
-        <div class="timer-box" id="stdContainer">
-            <div class="label">Tiempo Estándar</div>
-            <div class="timer-val" id="timerStd">0.000s</div>
+    <main class="main-content">
+        <div class="header">
+            <h3>SLER LAB: NIVEL <span id="lvlDisplay">1</span></h3>
+            <span class="label" style="align-self: center;">Bell Ville, AR</span>
         </div>
-        <div class="timer-box" id="slerContainer" style="opacity: 0.2;">
-            <div class="label">Tiempo SLER</div>
-            <div class="timer-val" id="timerSler">0.000s</div>
+
+        <div class="timers">
+            <div class="timer-box">
+                <div class="label">Estándar</div>
+                <div id="timerStd" class="timer-val">0.000s</div>
+            </div>
+            <div class="timer-box" id="slerTimerCont" style="opacity: 0.2;">
+                <div class="label">SLER</div>
+                <div id="timerSler" class="timer-val">0.000s</div>
+            </div>
         </div>
-    </div>
 
-    <div id="exerciseBox" class="training-box"></div>
+        <div id="exerciseBox" class="training-box"></div>
 
-    <div class="controls">
-        <button id="mainBtn" onclick="handleFlow()">Iniciar Lectura Estándar</button>
-    </div>
+        <div class="controls">
+            <button id="mainBtn" onclick="handleFlow()">Iniciar Lectura Estándar</button>
+        </div>
 
-    <table id="resultsTable">
-        <thead>
-            <tr>
-                <th>Nivel</th>
-                <th>Renglones</th>
-                <th>Estándar (s)</th>
-                <th>SLER (s)</th>
-                <th>Mejoría</th>
-            </tr>
-        </thead>
-        <tbody id="statsBody"></tbody>
-    </table>
+        <table id="resultsTable">
+            <thead>
+                <tr><th>Lvl</th><th>Renglones</th><th>Std</th><th>SLER</th><th>Δ Mejoría</th></tr>
+            </thead>
+            <tbody id="statsBody"></tbody>
+        </table>
+    </main>
 
 <script>
     let startTime, timerInterval;
     let currentLvl = 1;
-    let currentMode = 'IDLE'; // IDLE, RUNNING_STD, WAIT_SLER, RUNNING_SLER
+    let mode = 'IDLE'; // IDLE, RUN_STD, WAIT_SLER, RUN_SLER
     let results = [];
+    const LIMITE = 45; // Más de 30 caracteres como pediste
 
-    const levels = [
-        { lines: 2, std: "La lectura fluida requiere una práctica constante.\nEl sistema visual se adapta al ritmo propuesto.", 
-          sler: "LA LECTURA FLUIDA REQUIERE UNA PRÁCTI-\n-CA CONSTANTE. EL SISTEMA VISUAL SE A-\n-DAPTA AL RITMO PROPUESTO." },
-        { lines: 4, std: "El desarrollo de la neurociencia aplicada permite\noptimizar los procesos de captura de información.\nCada renglón demanda un esfuerzo muscular ciliar\nque el sistema SLER busca reducir drásticamente.", 
-          sler: "EL DESARROLLO DE LA NEUROCIENCIA APLI-\n-CADA PERMITE OPTIMIZAR LOS PROCESOS-\n-DE CAPTURA DE INFORMACIÓN. CADA REN-\n,GLÓN DEMANDA UN ESFUERZO MUSCULAR." },
-        { lines: 6, std: "Cuando el ojo llega al final de una línea común,\nse produce un salto sacádico de retorno forzado.\nEste movimiento es mecánico y no aporta datos,\ngenerando un vacío de milisegundos en el foco.\nLa fatiga aumenta proporcionalmente a la carga,\nlimitando la evolución natural de la lectura.", 
-          sler: "CUANDO EL OJO LLEGA AL FINAL DE UNA LÍ-\n-NEA COMÚN, SE PRODUCE UN SALTO SACÁ-\n-DICO DE RETORNO FORZADO. ESTE MOVI-\n,MIENTO ES MECÁNICO Y NO APORTA DA-\n-TOS, GENERANDO UN VACÍO DE MILISE-\n.GUNDOS EN EL FOCO ACTUAL." },
-        { lines: 10, std: "El algoritmo de entrenamiento final es técnico.\nRequiere concentración absoluta en voz alta.\nEvite distracciones externas durante el proceso.\nObserve cómo su cerebro procesa cada sílaba.\nLa métrica final validará su evolución neural.\nNo detenga el flujo hasta terminar el bloque.\nLa persistencia es clave en el sistema SLER.\nCada binomio refuerza la conexión visual.\nAnalice su propia mejora en los parciales.\nFinalice la sesión para registrar sus datos.", 
-          sler: "EL ALGORITMO DE ENTRENAMIENTO FINAL-\n-ES TÉCNICO. REQUIERE CONCENTRACIÓN-\n-ABSOLUTA EN VOZ ALTA. EVITE DISTRAC-\n,CIONES EXTERNAS DURANTE EL PROCESO.\nOBSERVE CÓMO SU CEREBRO PROCESA CA-\n-DA SÍLABA. LA MÉTRICA FINAL VALIDA-\n-RÁ SU EVOLUCIÓN NEURAL. NO DETENGA-\n,EL FLUJO HASTA TERMINAR EL BLOQUE.\nLA PERSISTENCIA ES CLAVE EN EL SISTE-\n.MA SLER DE LECTURA RECÍPROCA." }
+    const texts = [
+        "La lectura tradicional implica un salto brusco al final de cada renglón impreso. El sistema visual se adapta.",
+        "El desarrollo de la neurociencia aplicada permite optimizar los procesos de captura de información. Cada renglón demanda un esfuerzo muscular ciliar que el sistema SLER busca reducir drásticamente hoy.",
+        "Cuando el ojo llega al final de una línea común, se produce un salto sacádico de retorno forzado. Este movimiento es mecánico y no aporta datos, generando un vacío de milisegundos en el foco. La fatiga aumenta.",
+        "El algoritmo de entrenamiento final es técnico. Requiere concentración absoluta en voz alta. Evite distracciones externas durante el proceso. Observe cómo su cerebro procesa cada sílaba. La métrica final validará su evolución neural. No detenga el flujo hasta terminar el bloque. La persistencia es clave en el sistema SLER. Cada binomio refuerza la conexión visual. Analice su mejora."
     ];
+
+    // MOTOR SLER OFICIAL (Refactorizado para tu Lab)
+    function tratarSignos(w, inv) {
+        if (!inv) return w;
+        let p = w.match(/^[.,;:]+/), s = w.match(/[.,;:]+$/);
+        let base = w.replace(/^[.,;:]+|[.,;:]+$/g, '');
+        return (s ? s[0] : '') + base + (p ? p[0] : '');
+    }
+
+    function ejecutarMotor(texto) {
+        let mazo = texto.replace(/\s+/g, ' ').trim().split(' ');
+        let res = "", par = false;
+        while (mazo.length > 0) {
+            let lin = "";
+            while (mazo.length > 0 && (lin.length + mazo[0].length + (lin ? 1 : 0)) <= LIMITE) {
+                lin += (lin ? " " : "") + mazo.shift();
+            }
+            if (par) {
+                let inv = lin.split(' ').map(w => tratarSignos(w, true)).reverse().join(' ');
+                let pad = "&nbsp;".repeat(Math.max(0, LIMITE - inv.length));
+                res += `<div class="sler-line">${pad}${inv}</div>`;
+            } else {
+                res += `<div class="sler-line">${lin}</div>`;
+            }
+            par = !par;
+        }
+        return res;
+    }
 
     function handleFlow() {
         const btn = document.getElementById('mainBtn');
         const box = document.getElementById('exerciseBox');
-        const data = levels[currentLvl - 1];
-
-        if (currentMode === 'IDLE') {
-            currentMode = 'RUNNING_STD';
-            box.innerText = data.std;
+        
+        if (mode === 'IDLE') {
+            mode = 'RUN_STD';
+            box.innerHTML = texts[currentLvl-1];
             box.style.display = 'block';
-            btn.innerText = "Finalizar Lectura Estándar";
+            btn.innerText = "Finalizar Estándar";
             startClock('timerStd');
-        } 
-        else if (currentMode === 'RUNNING_STD') {
+        } else if (mode === 'RUN_STD') {
             stopClock();
-            currentMode = 'WAIT_SLER';
+            mode = 'WAIT_SLER';
             box.style.display = 'none';
-            btn.innerText = "Iniciar Lectura SLER";
-            document.getElementById('slerContainer').style.opacity = "1";
-        }
-        else if (currentMode === 'WAIT_SLER') {
-            currentMode = 'RUNNING_SLER';
-            box.innerText = data.sler;
+            btn.innerText = "Iniciar Entrenamiento SLER";
+            document.getElementById('slerTimerCont').style.opacity = "1";
+        } else if (mode === 'WAIT_SLER') {
+            mode = 'RUN_SLER';
+            box.innerHTML = ejecutarMotor(texts[currentLvl-1]);
             box.style.display = 'block';
-            btn.innerText = "Finalizar Lectura SLER";
+            btn.innerText = "Finalizar SLER";
             startClock('timerSler');
-        }
-        else if (currentMode === 'RUNNING_SLER') {
+        } else if (mode === 'RUN_SLER') {
             stopClock();
-            recordResults();
-            if (currentLvl < levels.length) {
-                currentLvl++;
-                prepareNextLevel();
-            } else {
-                showFinalStats();
-            }
+            saveAndNext();
         }
     }
 
     function startClock(id) {
         startTime = performance.now();
         timerInterval = setInterval(() => {
-            const delta = (performance.now() - startTime) / 1000;
-            document.getElementById(id).innerText = delta.toFixed(3) + "s";
+            document.getElementById(id).innerText = ((performance.now() - startTime) / 1000).toFixed(3) + "s";
         }, 10);
     }
 
     function stopClock() { clearInterval(timerInterval); }
 
-    function recordResults() {
-        results.push({
-            lvl: currentLvl,
-            lines: levels[currentLvl-1].lines,
-            std: document.getElementById('timerStd').innerText,
-            sler: document.getElementById('timerSler').innerText
-        });
+    function saveAndNext() {
+        const std = document.getElementById('timerStd').innerText;
+        const sler = document.getElementById('timerSler').innerText;
+        results.push({lvl: currentLvl, std, sler});
+        
+        document.getElementById(`side-${currentLvl}`).classList.add('done');
+        
+        if (currentLvl < 4) {
+            currentLvl++;
+            mode = 'IDLE';
+            document.getElementById('exerciseBox').style.display = 'none';
+            document.getElementById('lvlDisplay').innerText = currentLvl;
+            document.getElementById('timerStd').innerText = "0.000s";
+            document.getElementById('timerSler').innerText = "0.000s";
+            document.getElementById('slerTimerCont').style.opacity = "0.2";
+            document.getElementById('mainBtn').innerText = "Iniciar Lectura Estándar";
+        } else {
+            finish();
+        }
     }
 
-    function prepareNextLevel() {
-        currentMode = 'IDLE';
-        document.getElementById('exerciseBox').style.display = 'none';
-        document.getElementById('lvlDisplay').innerText = currentLvl;
-        document.getElementById('timerStd').innerText = "0.000s";
-        document.getElementById('timerSler').innerText = "0.000s";
-        document.getElementById('slerContainer').style.opacity = "0.2";
-        document.getElementById('mainBtn').innerText = "Iniciar Lectura Estándar";
-    }
-
-    function showFinalStats() {
+    function finish() {
         document.getElementById('exerciseBox').style.display = 'none';
         document.getElementById('mainBtn').style.display = 'none';
         document.getElementById('resultsTable').style.display = 'table';
@@ -158,7 +190,7 @@
         results.forEach(r => {
             let s1 = parseFloat(r.std), s2 = parseFloat(r.sler);
             let imp = (((s1 - s2) / s1) * 100).toFixed(1) + "%";
-            body.innerHTML += `<tr><td>${r.lvl}</td><td>${r.lines}</td><td>${r.std}</td><td>${r.sler}</td><td>${imp}</td></tr>`;
+            body.innerHTML += `<tr><td>${r.lvl}</td><td>${[2,4,6,10][r.lvl-1]}</td><td>${r.std}</td><td>${r.sler}</td><td>${imp}</td></tr>`;
         });
     }
 </script>

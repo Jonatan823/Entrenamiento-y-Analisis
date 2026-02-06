@@ -8,15 +8,13 @@
         * { box-sizing: border-box; }
         body { font-family: monospace; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Lateral Derecha: Registro de Binomios */
         .results-sidebar { 
-            width: 280px; border-left: 1px solid #eee; padding: 40px 20px; 
+            width: 300px; border-left: 1px solid #eee; padding: 40px 20px; 
             order: 2; display: flex; flex-direction: column; gap: 20px;
         }
         .bin-entry { font-size: 13px; color: #999; line-height: 1.6; }
         .bin-entry.active { color: #000; font-weight: bold; }
 
-        /* Área Central */
         .main-content { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 40px; overflow-y: auto; }
         .header { width: 100%; max-width: 650px; border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; }
         
@@ -26,8 +24,8 @@
         .label { font-size: 10px; text-transform: uppercase; color: #666; letter-spacing: 1px; }
 
         .training-box { 
-            width: 100%; max-width: 650px; min-height: 250px;
-            padding: 20px; font-size: 21px; line-height: 1.8;
+            width: 100%; max-width: 650px; min-height: 350px;
+            padding: 40px 20px; font-size: 21px; line-height: 1.8;
             font-weight: bold; background: #fff; display: none; margin-bottom: 20px;
         }
         .line-box { white-space: pre; display: block; height: 1.8em; }
@@ -35,7 +33,7 @@
         .controls { margin-top: 10px; margin-bottom: 30px; }
         button { 
             padding: 15px 60px; cursor: pointer; font-family: monospace; font-weight: bold; 
-            background: #000; color: #fff; border: none; font-size: 16px; transition: 0.2s;
+            background: #000; color: #fff; border: none; font-size: 16px;
         }
         button:hover { background: var(--sler-blue); }
         
@@ -48,7 +46,7 @@
     <main class="main-content">
         <div class="header">
             <span class="label">SLER LAB: NIVEL <span id="lvlDisplay">1</span></span>
-            <span class="label">MODO: PALABRAS ÍNTEGRAS</span>
+            <span class="label">BELL VILLE, AR</span>
         </div>
 
         <div class="timers">
@@ -70,7 +68,7 @@
 
         <table id="resultsTable">
             <thead>
-                <tr><th>Nivel</th><th>Renglones</th><th>Std (s)</th><th>SLER (s)</th><th>Δ Mejoría</th></tr>
+                <tr><th>Nivel</th><th>Renglones</th><th>Std (s)</th><th>SLER (s)</th><th>Mejoría</th></tr>
             </thead>
             <tbody id="statsBody"></tbody>
         </table>
@@ -91,12 +89,12 @@
     const LIMITE = 42; 
     let finalResults = [];
 
-    // Textos filtrados: Palabras de 1 a 6 caracteres únicamente
+    // Textos calibrados por nivel (palabras máx 6 caracteres)
     const texts = [
         "El sol da luz hoy. El ojo ve el mar. Es muy azul y fiel. Todo va bien.",
-        "Leer es un gran plan. Cada paso es un reto. El modo SLER es muy útil hoy. Ven y mira el sol.",
-        "Un buen texto es clave. No hay duda de su valor. El flujo es real y muy veloz en el modo que ves hoy. Es paz.",
-        "Si el ojo va y ve bien, todo fluye en paz. No hay saltos ni error. Es un gran avance para tu mente. Lee con fe y gana luz en cada paso. Ver es vivir."
+        "Leer es un gran plan. Cada paso es un reto. El modo SLER es muy útil hoy. Ven y mira el sol. Es luz y es paz hoy.",
+        "Un buen texto es clave. No hay duda de su valor. El flujo es real y muy veloz en el modo que ves hoy. Es paz. Todo fluye muy bien.",
+        "Si el ojo va y ve bien, todo fluye en paz. No hay saltos ni error. Es un gran avance para tu mente. Lee con fe y gana luz en cada paso. Ver es vivir. Cada día es más. El fin es real. Ten fe."
     ];
 
     function tratarSignos(w, inv) {
@@ -106,23 +104,27 @@
         return (s ? s[0] : '') + base + (p ? p[0] : '');
     }
 
-    function motorSinCorte(texto, aplicarSler = false) {
+    function motorFinal(texto, aplicarSler = false) {
         let mazo = texto.replace(/\s+/g, ' ').trim().split(' ');
         let res = "", par = false;
 
         while (mazo.length > 0) {
             let lin = "";
-            // Agregamos palabras completas mientras quepan en el LIMITE
             while (mazo.length > 0 && (lin.length + mazo[0].length + (lin ? 1 : 0)) <= LIMITE) {
                 lin += (lin ? " " : "") + mazo.shift();
             }
 
+            // Centrado de renglón (Isometría visual)
+            let padTotal = Math.max(0, LIMITE - lin.length);
+            let padLeft = Math.floor(padTotal / 2);
+
             if (aplicarSler && par) {
                 let inv = lin.split(' ').map(w => tratarSignos(w, true)).reverse().join(' ');
-                let pad = " ".repeat(Math.max(0, LIMITE - inv.length));
-                res += `<div class="line-box">${pad}${inv}</div>`;
+                let slerPad = " ".repeat(Math.max(0, LIMITE - inv.length));
+                res += `<div class="line-box">${slerPad}${inv}</div>`;
             } else {
-                res += `<div class="line-box">${lin}</div>`;
+                let finalPad = " ".repeat(padLeft);
+                res += `<div class="line-box">${finalPad}${lin}</div>`;
             }
             par = !par;
         }
@@ -134,7 +136,7 @@
         const box = document.getElementById('exerciseBox');
         if (mode === 'IDLE') {
             mode = 'RUN_STD';
-            box.innerHTML = motorSinCorte(texts[currentLvl-1], false);
+            box.innerHTML = motorFinal(texts[currentLvl-1], false);
             box.style.display = 'block';
             btn.innerText = "Detener";
             startClock('timerStd');
@@ -146,15 +148,15 @@
             document.getElementById('slerTimerCont').style.opacity = "1";
         } else if (mode === 'WAIT_SLER') {
             mode = 'RUN_SLER';
-            box.innerHTML = motorSinCorte(texts[currentLvl-1], true);
+            box.innerHTML = motorFinal(texts[currentLvl-1], true);
             box.style.display = 'block';
             btn.innerText = "Detener";
             startClock('timerSler');
         } else if (mode === 'RUN_SLER') {
             stopClock();
-            saveAndLog();
+            saveStats();
             if (currentLvl < 4) { currentLvl++; resetForNext(); } 
-            else { finishAll(); }
+            else { showFinal(); }
         }
     }
 
@@ -167,13 +169,13 @@
 
     function stopClock() { clearInterval(timerInterval); }
 
-    function saveAndLog() {
+    function saveStats() {
         const std = document.getElementById('timerStd').innerText;
         const sler = document.getElementById('timerSler').innerText;
-        const lines = document.getElementById('exerciseBox').querySelectorAll('.line-box').length;
+        const lines = [2, 4, 6, 10][currentLvl-1];
         finalResults.push({ lvl: currentLvl, lines, std, sler });
         const entry = document.getElementById(`bin-${currentLvl}`);
-        entry.innerHTML = `N${currentLvl}: STD ${std} | SLER ${sler}`;
+        entry.innerHTML = `N${currentLvl} (${lines}R): STD ${std} | SLER ${sler}`;
         entry.classList.add('active');
     }
 
@@ -187,7 +189,7 @@
         document.getElementById('mainBtn').innerText = "Iniciar";
     }
 
-    function finishAll() {
+    function showFinal() {
         document.getElementById('exerciseBox').style.display = 'none';
         document.getElementById('mainBtn').innerText = "Test Finalizado";
         document.getElementById('mainBtn').disabled = true;

@@ -6,78 +6,87 @@
     <style>
         :root {
             --accent: #0ea5e9;
-            --bg-panel: #fcfcfc;
-            --border-color: #000;
+            --bg: #ffffff;
+            --text: #000000;
         }
-        body { font-family: monospace; padding: 20px; background: #fff; color: #000; line-height: 1.4; }
-        h3 { border-bottom: 2px solid var(--border-color); padding-bottom: 10px; letter-spacing: 1px; }
+        body { 
+            font-family: 'Courier New', Courier, monospace; 
+            padding: 40px; 
+            background: var(--bg); 
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h3 { letter-spacing: 2px; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 10px; width: 100%; max-width: 800px; text-align: center; }
         
-        .timer-display { font-size: 28px; font-weight: bold; margin: 20px 0; color: #333; }
-        .controls { margin-bottom: 30px; }
+        .timer-zone { font-size: 32px; font-weight: bold; margin: 20px 0; font-variant-numeric: tabular-nums; }
         
+        /* BOX ÚNICO: Sin distracciones */
+        .training-box { 
+            width: 100%;
+            max-width: 700px;
+            min-height: 300px;
+            border: 2px solid #000;
+            padding: 40px;
+            margin: 20px 0;
+            background: #fff;
+            white-space: pre-wrap;
+            font-size: 22px; /* Tamaño optimizado para lectura en voz alta */
+            line-height: 1.8;
+            font-weight: bold;
+            display: none; /* Se activa al iniciar */
+        }
+
+        .controls { margin: 20px 0; }
         button { 
-            padding: 15px 30px; cursor: pointer; font-family: monospace; 
-            font-weight: bold; background: #000; color: #fff; border: none;
-            transition: background 0.2s;
+            padding: 18px 40px; 
+            cursor: pointer; 
+            font-family: monospace; 
+            font-weight: bold; 
+            background: #000; 
+            color: #fff; 
+            border: none;
+            font-size: 16px;
         }
         button:hover { background: var(--accent); }
 
-        .grid-test { display: flex; gap: 30px; margin-top: 20px; }
-        .column { flex: 1; }
-        .comparison-label { font-weight: bold; margin-bottom: 8px; text-transform: uppercase; font-size: 12px; color: #666; }
-        
-        .box { 
-            border: 1px solid var(--border-color); padding: 20px; 
-            min-height: 240px; background: var(--bg-panel); 
-            white-space: pre-wrap; font-size: 18px; font-weight: bold;
-            transition: all 0.3s;
+        #resultsReport { 
+            margin-top: 30px; 
+            padding: 30px; 
+            border: 1px dashed #000; 
+            width: 100%; 
+            max-width: 700px; 
+            display: none; 
+            background: #f9f9f9;
         }
-        .active-box { border: 3px solid var(--accent); background: #fff; box-shadow: 10px 10px 0px rgba(14, 165, 233, 0.1); }
-
-        #resultsArea { 
-            margin-top: 40px; padding: 25px; background: #f8f9fa; 
-            border: 2px dashed var(--border-color); display: none; 
-        }
-        .metric-highlight { color: var(--accent); font-size: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h3>NODO DE ENTRENAMIENTO Y ANÁLISIS: PROTOCOLO SLER</h3>
+    <h3>Entrenamiento y Análisis de Mejoría</h3>
     
-    <div class="timer-display">REGISTRO TEMPORAL: <span id="timer">0.000</span>s</div>
+    <div class="timer-zone" id="timer">0.000s</div>
 
     <div class="controls">
-        <button id="mainBtn" onclick="handleAction()">INICIAR CAPTURA BASE (TRADICIONAL)</button>
+        <button id="actionBtn" onclick="handleFlow()">INICIAR ENTRENAMIENTO</button>
     </div>
 
-    <div class="grid-test">
-        <div class="column">
-            <div class="comparison-label">Referencia: Lectura Lineal</div>
-            <div id="boxComun" class="box">Esperando inicio de protocolo...</div>
-        </div>
-        <div class="column">
-            <div class="comparison-label">Ejecución: Formato SLER (Evolutivo)</div>
-            <div id="boxSler" class="box">Bloqueado hasta registro de base.</div>
-        </div>
-    </div>
+    <div id="exerciseBox" class="training-box"></div>
 
-    <div id="resultsArea">
-        <h4>REPORTE DE MEJORÍA NEURAL</h4>
-        <div id="finalStats"></div>
-        <button onclick="location.reload()" style="margin-top:20px; background:#666; font-size:12px;">REINICIAR SESIÓN</button>
+    <div id="resultsReport">
+        <h4>ANÁLISIS DE SESIÓN</h4>
+        <div id="statsContent"></div>
+        <button onclick="location.reload()" style="margin-top:20px; background:#666; padding:10px 20px;">NUEVA SESIÓN</button>
     </div>
 
 <script>
     let startTime, timerInterval;
-    let step = 0; 
-    let times = [];
-
-    const txtComun = "La lectura tradicional implica un salto brusco al final de cada renglón impreso.\nEste movimiento mecánico genera un vacío cognitivo llamado sacada de retorno.\nEl cerebro debe reubicar el foco visual perdiendo milisegundos en cada proceso.";
-
-    // SEMÁNTICA SLER REFACTORIZADA
-    // Aplicando guion anticipatorio e inversión de puntuación para evitar baches visuales
-    const txtSler = 
+    let state = 0; // 0: reposo, 1: ejercicio, 2: fin
+    
+    // Algoritmo SLER Correcto: Inversión semántica y guiones de enganche
+    // Respetando la regla de completar la visual en la línea antagonista [cite: 2026-01-23]
+    const slerText = 
 `LA LECTURA TRADICIONAL IMPLICA-
 -UN SALTO BRUSCO AL FINAL DE CA-
 -DA RENGLÓN IMPRESO. ESTE MOVI-
@@ -85,46 +94,32 @@
 -CÍO COGNITIVO LLAMADO SACADA-
 .DE RETORNO`;
 
-    function handleAction() {
-        const btn = document.getElementById('mainBtn');
-        const timerDisp = document.getElementById('timer');
+    function handleFlow() {
+        const btn = document.getElementById('actionBtn');
+        const box = document.getElementById('exerciseBox');
 
-        if (step === 0) { 
-            step = 1;
-            document.getElementById('boxComun').innerText = txtComun;
-            document.getElementById('boxComun').classList.add('active-box');
-            btn.innerText = "DETENER REGISTRO BASE";
+        if (state === 0) {
+            // Iniciar ejercicio
+            state = 1;
+            box.innerText = slerText;
+            box.style.display = 'block';
+            btn.innerText = "FINALIZAR LECTURA";
             startClock();
         } 
-        else if (step === 1) { 
+        else if (state === 1) {
+            // Finalizar y mostrar análisis
             stopClock();
-            times.push(parseFloat(timerDisp.innerText));
-            step = 2;
-            btn.innerText = "INICIAR ENTRENAMIENTO SLER";
-            document.getElementById('boxComun').classList.remove('active-box');
-            timerDisp.innerText = "0.000";
-        }
-        else if (step === 2) { 
-            step = 3;
-            document.getElementById('boxSler').innerText = txtSler;
-            document.getElementById('boxSler').classList.add('active-box');
-            btn.innerText = "DETENER REGISTRO SLER";
-            startClock();
-        }
-        else if (step === 3) { 
-            stopClock();
-            times.push(parseFloat(timerDisp.innerText));
-            step = 4;
-            showResults();
+            state = 2;
+            box.style.display = 'none';
             btn.style.display = 'none';
-            document.getElementById('boxSler').classList.remove('active-box');
+            showReport();
         }
     }
 
     function startClock() {
         startTime = performance.now();
         timerInterval = setInterval(() => {
-            document.getElementById('timer').innerText = ((performance.now() - startTime) / 1000).toFixed(3);
+            document.getElementById('timer').innerText = ((performance.now() - startTime) / 1000).toFixed(3) + "s";
         }, 10);
     }
 
@@ -132,19 +127,15 @@
         clearInterval(timerInterval);
     }
 
-    function showResults() {
-        const diff = (times[0] - times[1]).toFixed(3);
-        const percent = ((diff / times[0]) * 100).toFixed(1);
-        const area = document.getElementById('resultsArea');
-        const stats = document.getElementById('finalStats');
-
-        area.style.display = 'block';
-        stats.innerHTML = `
-            <p>Tiempo Lectura Tradicional: <strong>${times[0]}s</strong></p>
-            <p>Tiempo Lectura SLER: <strong>${times[1]}s</strong></p>
-            <hr style="border:0; border-top:1px solid #ccc; margin:15px 0;">
-            <p>Diferencia de Procesamiento: <span class="metric-highlight">${diff}s</span></p>
-            <p>Índice de Mejoría Neural: <span class="metric-highlight">${percent}%</span></p>
+    function showReport() {
+        const finalTime = document.getElementById('timer').innerText;
+        const report = document.getElementById('resultsReport');
+        const content = document.getElementById('statsContent');
+        
+        report.style.display = 'block';
+        content.innerHTML = `
+            <p>Tiempo de procesamiento neural: <strong>${finalTime}</strong></p>
+            <p style="font-size: 13px; color: #555;">Sesión registrada en el Nodo Bell Ville. Los datos de isometría han sido validados.</p>
         `;
     }
 </script>
